@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ImageProcessor Unit Tests (v2)</title>
+  <style>
+    body { font-family: monospace; background: #0d0d0d; color: #e8e8e8; padding: 24px; }
+    .test { padding: 4px 8px; margin: 2px 0; border-radius: 4px; }
+    .pass { color: #4ade80; }
+    .fail { color: #f87171; background: rgba(248,113,113,0.1); }
+    .summary { margin-top: 20px; font-weight: bold; }
+  </style>
+  <script src="../src/lib/pica.min.js"></script>
+</head>
+<body>
+  <h1>🧪 ImageProcessor v2 Tests</h1>
+  <div id="results"></div>
+  <div id="summary" class="summary"></div>
+
+  <script type="module">
+    import { loadImage, mergeImages, exportAs, createCanvas, getImageInfo } from '../src/core/imageProcessor.js';
+
+    const results = document.getElementById('results');
+    const summaryEl = document.getElementById('summary');
+    let passed = 0, failed = 0;
+
+    function assert(cond, msg) { if (!cond) throw new Error(msg); }
+    function log(name, success, detail = '') {
+      const el = document.createElement('div');
+      el.className = `test ${success ? 'pass' : 'fail'}`;
+      el.textContent = `${success ? '✅' : '❌'} ${name} ${detail ? '— ' + detail : ''}`;
+      results.appendChild(el);
+      if (success) passed++; else failed++;
+    }
+
+    function createTestImage(w, h, color) {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = color;
+        ctx.fillRect(0,0,w,h);
+        return new Promise(r => c.toBlob(b => r(new File([b], 't.png', {type:'image/png'}))));
+    }
+
+    async function runTests() {
+        // Setup Pica
+        if (!window.pica) console.warn('Pica not found, high-quality tests might fallback');
+
+        const red = await createTestImage(500, 500, 'red');
+        const blue = await createTestImage(500, 500, 'blue');
+        const green = await createTestImage(500, 500, 'green');
+        const yellow = await createTestImage(500, 500, 'yellow');
+
+        const imgRed = await loadImage(red);
+        const imgBlue = await loadImage(blue);
+        const imgGreen = await loadImage(green);
+        const imgYellow = await loadImage(yellow);
+
+        // Test 1: Layout 2 (Split) - Standard
+        try {
+            const res = await mergeImages([imgRed, imgBlue], { layout: '2' });
+            assert(res.width === 1000, 'Width 1000');
+            assert(res.height === 500, 'Height 500');
+            log('Layout 2 (Standard)', true);
+        } catch (e) { log('Layout 2 (Standard)', false, e.message); }
+
+        // Test 2: Layout 3 (Mixed) - 3000x3000
+        try {
+            const res = await mergeImages([imgRed, imgBlue, imgGreen], { layout: '3' });
+            assert(res.width === 3000, 'Width 3000');
+            assert(res.height === 3000, 'Height 3000');
+            log('Layout 3 (Mixed 3000px)', true);
+        } catch (e) { log('Layout 3 (Mixed 3000px)', false, e.message); }
+
+        // Test 3: Layout 4 (Grid) - 3000x3000
+        try {
+            const res = await mergeImages([imgRed, imgBlue, imgGreen, imgYellow], { layout: '4' });
+            assert(res.width === 3000, 'Width 3000');
+            assert(res.height === 3000, 'Height 3000');
+            log('Layout 4 (Grid 3000px)', true);
+        } catch (e) { log('Layout 4 (Grid 3000px)', false, e.message); }
+
+        // Test 4: Custom Dimensions (Layout 2)
+        try {
+            const res = await mergeImages([imgRed, imgBlue], { layout: '2', width: 2000, height: 1000 });
+            assert(res.width === 2000, 'Width 2000');
+            assert(res.height === 1000, 'Height 1000');
+            log('Layout 2 (Custom 2000x1000)', true);
+        } catch (e) { log('Layout 2 (Custom 2000x1000)', false, e.message); }
+
+        // Summary
+        summaryEl.textContent = `${passed}/${passed+failed} tests passed`;
+        summaryEl.className = failed === 0 ? 'summary pass' : 'summary fail';
+    }
+
+    runTests().catch(e => {
+        console.error(e);
+        summaryEl.textContent = 'Runner Error: ' + e.message;
+    });
+  </script>
+</body>
+</html>

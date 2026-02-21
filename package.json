@@ -1,0 +1,62 @@
+{
+    "name": "art-split-merger",
+    "version": "1.0.0",
+    "description": "Desktop app for merging split album cover images into one horizontal artwork",
+    "main": "main.js",
+    "scripts": {
+        "start": "start.bat",
+        "start:dev": "start.bat --dev",
+        "test": "node --test tests/cli.test.js",
+        "build": "electron-builder --win portable",
+        "build:dir": "electron-builder --win dir",
+        "build:portable": "electron-builder --win portable",
+        "build:nsis": "electron-builder --win nsis",
+        "lint": "eslint src/ main.js preload.js"
+    },
+    "author": "",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^33.0.0",
+        "electron-builder": "^25.0.0",
+        "eslint": "^10.0.1",
+        "globals": "^17.3.0",
+        "sharp": "^0.34.5"
+    },
+    "build": {
+        "appId": "com.artsplitmerger.app",
+        "productName": "Art Split Merger",
+        "forceCodeSigning": false,
+        "directories": {
+            "output": "dist"
+        },
+        "win": {
+            "target": [
+                "portable",
+                "dir"
+            ],
+            "icon": "src/assets/icon.png"
+        },
+        "nsis": {
+            "oneClick": true,
+            "perMachine": false,
+            "allowToChangeInstallationDirectory": false,
+            "installerIcon": "src/assets/icon.png",
+            "uninstallerIcon": "src/assets/icon.png"
+        },
+        "portable": {
+            "artifactName": "ArtSplitMerger-${version}-portable.exe"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "index.html",
+            "src/**/*",
+            "!cli/**",
+            "!tests/**",
+            "!dist/**"
+        ]
+    },
+    "dependencies": {
+        "pica": "^9.0.1"
+    }
+}

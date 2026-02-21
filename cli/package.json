@@ -1,0 +1,16 @@
+{
+  "name": "art-split-merger-cli",
+  "version": "1.0.0",
+  "description": "CLI tool for merging split album cover images",
+  "main": "splitmerge.js",
+  "bin": {
+    "splitmerge": "./splitmerge.js"
+  },
+  "scripts": {
+    "test": "node --test ../tests/cli.test.js"
+  },
+  "dependencies": {
+    "sharp": "^0.33.0"
+  },
+  "license": "MIT"
+}
