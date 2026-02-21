@@ -359,7 +359,8 @@ function downloadBlob(blob, filename) {
     URL.revokeObjectURL(url);
 }
 
-DOM.btnSavePng.addEventListener('click', async () => {
+// ─── Action Handlers ─────────────────────────────────────────────────
+async function handleSavePng() {
     if (!state.mergedCanvas) return;
     try {
         if (isElectron) {
@@ -370,10 +371,13 @@ DOM.btnSavePng.addEventListener('click', async () => {
             const blob = await exportAs(state.mergedCanvas, 'png');
             downloadBlob(blob, 'merged.png');
         }
-    } catch (e) { showToast('Save failed: ' + e.message, 'error'); }
-});
+    } catch (e) {
+        log.error('PNG Save failed:', e);
+        showToast('Save failed: ' + e.message, 'error');
+    }
+}
 
-DOM.btnSaveJpg.addEventListener('click', async () => {
+async function handleSaveJpg() {
     if (!state.mergedCanvas) return;
     try {
         if (isElectron) {
@@ -384,10 +388,13 @@ DOM.btnSaveJpg.addEventListener('click', async () => {
             const blob = await exportAs(state.mergedCanvas, 'jpeg', getQuality());
             downloadBlob(blob, 'merged.jpg');
         }
-    } catch (e) { showToast('Save failed: ' + e.message, 'error'); }
-});
+    } catch (e) {
+        log.error('JPG Save failed:', e);
+        showToast('Save failed: ' + e.message, 'error');
+    }
+}
 
-DOM.btnCopy.addEventListener('click', async () => {
+async function handleCopyToClipboard() {
     if (!state.mergedCanvas) return;
     try {
         if (isElectron) {
@@ -399,18 +406,29 @@ DOM.btnCopy.addEventListener('click', async () => {
             await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
             showToast('Copied to clipboard');
         }
-    } catch (e) { showToast('Copy failed: ' + e.message, 'error'); }
-});
+    } catch (e) {
+        log.error('Copy failed:', e);
+        showToast('Copy failed: ' + e.message, 'error');
+    }
+}
 
-// ─── Reset All ───────────────────────────────────────────────────────
-$('#btn-reset-all').addEventListener('click', () => {
+function handleResetAll() {
+    if (state.images.every(img => img === null)) return;
+
     state.images = state.images.map(() => null);
     state.mergedCanvas = null;
     renderDropZones();
     updatePreview();
     showToast('All images cleared', 'success');
     log.info('Reset all images');
-});
+}
+
+DOM.btnSavePng.addEventListener('click', handleSavePng);
+DOM.btnSaveJpg.addEventListener('click', handleSaveJpg);
+DOM.btnCopy.addEventListener('click', handleCopyToClipboard);
+DOM.btnReset.addEventListener('click', handleResetAll);
+
+
 
 // ─── Batch Mode (Stubbed for now, kept existing structure) ───────────
 // Batch mode logic is largely compatible, assuming logic matches layout 2.
