@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:;">
+  <meta name="description" content="Merge split album cover images into collage layouts (2, 3, or 4 images). Smart upscaling, dark theme, portable.">
+  <title>Art Split Merger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="src/assets/icon-256.png">
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div>
+        <h1><span class="icon">⬛</span> Art Split Merger</h1>
+        <span class="subtitle">Combine split album covers into beautiful collage layouts</span>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="single">Single Merge</button>
+      <button class="tab-btn" data-tab="batch">Batch Mode</button>
+    </nav>
+
+    <!-- ============================== -->
+    <!-- SINGLE MODE                     -->
+    <!-- ============================== -->
+    <section class="tab-content active" id="tab-single">
+
+      <!-- Layout Selector -->
+      <div class="layout-selector">
+        <label>Layout Mode:</label>
+        <div class="layout-options">
+          <button class="layout-btn active" data-layout="2" title="2 Images (Split)">
+            <span class="icon">◫</span> Split (2)
+          </button>
+          <button class="layout-btn" data-layout="3" title="3 Images (2 Top, 1 Bottom)">
+            <span class="icon">ip</span> Mixed (3)
+          </button>
+          <button class="layout-btn" data-layout="4" title="4 Images (2x2 Grid)">
+            <span class="icon">▦</span> Grid (4)
+          </button>
+        </div>
+      </div>
+
+      <!-- Dynamic Drop Grid -->
+      <div class="drop-grid" id="drop-grid">
+        <!-- Slots injected by JS -->
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-panel">
+        <div class="control-group">
+          <label for="resize-mode">Resize Mode</label>
+          <select id="resize-mode">
+            <option value="fit">Fit (preserve ratio)</option>
+            <option value="stretch">Stretch to fill</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>Output Size (optional)</label>
+          <div class="dim-group">
+            <input type="number" id="out-width" placeholder="auto" min="1" max="20000">
+            <span class="dim-separator">×</span>
+            <input type="number" id="out-height" placeholder="auto" min="1" max="20000">
+            <span class="dim-separator">px</span>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="bg-color">Background</label>
+          <input type="color" id="bg-color" value="#000000">
+        </div>
+
+        <div class="control-group">
+          <label for="jpg-quality">JPG Quality</label>
+          <input type="number" id="jpg-quality" value="92" min="1" max="100">
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-section">
+        <h2>📐 Preview</h2>
+        <div class="preview-wrapper" id="preview-wrapper">
+          <span class="preview-placeholder" id="preview-placeholder">Add two images to see preview</span>
+          <canvas id="preview-canvas" style="display:none;"></canvas>
+          <span class="preview-info" id="preview-info" style="display:none;"></span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions-row">
+        <button class="btn btn-accent" id="btn-save-png" disabled>
+          💾 Save PNG
+        </button>
+        <button class="btn btn-accent" id="btn-save-jpg" disabled>
+          💾 Save JPG
+        </button>
+        <button class="btn" id="btn-copy" disabled>
+          📋 Copy to Clipboard
+        </button>
+        <button class="btn" id="btn-reset-all">
+          🗑️ Reset All
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ============================== -->
+    <!-- BATCH MODE                      -->
+    <!-- ============================== -->
+    <section class="tab-content" id="tab-batch">
+      <div class="batch-section">
+        <h2>📦 Batch Merge</h2>
+
+        <div class="batch-drop-zone" id="batch-drop">
+          Drop multiple images here — they will be paired in order (1st+2nd, 3rd+4th, etc.)
+          <br><small>Or click to browse files</small>
+          <input type="file" class="hidden-input" id="batch-file-input" accept="image/png,image/jpeg,image/webp" multiple>
+        </div>
+
+        <div class="batch-pairs-list" id="batch-pairs-list">
+          <div class="batch-empty" id="batch-empty">No image pairs added yet</div>
+        </div>
+
+        <div class="batch-controls">
+          <button class="btn btn-accent" id="btn-batch-merge" disabled>
+            ⚡ Merge All
+          </button>
+          <button class="btn" id="btn-batch-clear">
+            🗑️ Clear All
+          </button>
+          <div class="batch-progress" id="batch-progress" style="display:none;">
+            <div class="batch-progress-bar" id="batch-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="src/lib/pica.min.js"></script>
+  <script type="module" src="src/ui/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build_log*.txt
+*.log
+.DS_Store
+Thumbs.db
+sprint-list.md
