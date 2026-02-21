@@ -161,80 +161,90 @@ async function drawLayout4(images, { mode, bgColor }) {
 export async function mergeImages(images, options = {}) {
     const {
         layout = '2',
-        width = 0,
-        height = 0,
         bgColor = '#000000',
         mode = 'fit'
     } = options;
 
     log.info(`Merging ${images.length} images, layout=${layout}, mode=${mode}`);
 
-    let canvas, ctx, outW, outH;
+    let canvas, outW, outH;
 
     // --- Layout 3: Mixed (2 Top, 1 Bottom) ---
     if (layout === '3') {
-        ({ canvas, ctx, outW, outH } = await drawLayout3(images, { mode, bgColor }));
+        ({ canvas, outW, outH } = await drawLayout3(images, { mode, bgColor }));
     }
     // --- Layout 4: Grid (2x2) ---
     else if (layout === '4') {
-        ({ canvas, ctx, outW, outH } = await drawLayout4(images, { mode, bgColor }));
+        ({ canvas, outW, outH } = await drawLayout4(images, { mode, bgColor }));
     }
     // --- Layout 2: Split (Original) ---
     else {
-        // Use first two images
-        const leftImg = images[0];
-        const rightImg = images[1];
-
-        if (!leftImg || !rightImg) {
-            throw new Error('Layout 2 requires at least 2 images');
-        }
-
-        const lw = leftImg.naturalWidth || leftImg.width;
-        const lh = leftImg.naturalHeight || leftImg.height;
-        const rw = rightImg.naturalWidth || rightImg.width;
-        const rh = rightImg.naturalHeight || rightImg.height;
-
-        // Calculate dimensions
-        if (width > 0 && height > 0) {
-            outW = width;
-            outH = height;
-        } else if (width > 0) {
-            // ... (width only logic simplified for async refactor, sticking to robust flow)
-            // Recalculating strict width logic from previous version to be safe
-            const targetHalfW = width / 2;
-            const leftScale = targetHalfW / lw;
-            const rightScale = targetHalfW / rw;
-            outH = Math.round(Math.max(lh * leftScale, rh * rightScale));
-            outW = width;
-        } else if (height > 0) {
-            const leftScale = height / lh;
-            const rightScale = height / rh;
-            outW = Math.round(lw * leftScale + rw * rightScale);
-            outH = height;
-        } else {
-            const targetH = Math.max(lh, rh);
-            const leftScale = targetH / lh;
-            const rightScale = targetH / rh;
-            outW = Math.round(lw * leftScale) + Math.round(rw * rightScale);
-            outH = targetH;
-        }
-
-        ({ canvas, ctx } = createCanvas(outW, outH));
-
-        // Fill bg
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, outW, outH);
-
-        const halfW = Math.round(outW / 2);
-
-        // Draw Left
-        await drawSmart(ctx, leftImg, 0, 0, halfW, outH, mode, bgColor);
-        // Draw Right
-        await drawSmart(ctx, rightImg, halfW, 0, outW - halfW, outH, mode, bgColor);
+        ({ canvas, outW, outH } = await drawLayout2(images, options));
     }
 
     log.info('Merge complete');
     return { canvas, width: outW, height: outH };
+}
+
+async function drawLayout2(images, options) {
+    const {
+        width = 0,
+        height = 0,
+        bgColor = '#000000',
+        mode = 'fit'
+    } = options;
+
+    const leftImg = images[0];
+    const rightImg = images[1];
+
+    if (!leftImg || !rightImg) {
+        throw new Error('Layout 2 requires at least 2 images');
+    }
+
+    const lw = leftImg.naturalWidth || leftImg.width;
+    const lh = leftImg.naturalHeight || leftImg.height;
+    const rw = rightImg.naturalWidth || rightImg.width;
+    const rh = rightImg.naturalHeight || rightImg.height;
+
+    let outW, outH;
+
+    // Calculate dimensions
+    if (width > 0 && height > 0) {
+        outW = width;
+        outH = height;
+    } else if (width > 0) {
+        const targetHalfW = width / 2;
+        const leftScale = targetHalfW / lw;
+        const rightScale = targetHalfW / rw;
+        outH = Math.round(Math.max(lh * leftScale, rh * rightScale));
+        outW = width;
+    } else if (height > 0) {
+        const leftScale = height / lh;
+        const rightScale = height / rh;
+        outW = Math.round(lw * leftScale + rw * rightScale);
+        outH = height;
+    } else {
+        const targetH = Math.max(lh, rh);
+        const leftScale = targetH / lh;
+        const rightScale = targetH / rh;
+        outW = Math.round(lw * leftScale) + Math.round(rw * rightScale);
+        outH = targetH;
+    }
+
+    const { canvas, ctx } = createCanvas(outW, outH);
+
+    // Fill bg
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, outW, outH);
+
+    const halfW = Math.round(outW / 2);
+
+    // Draw Left
+    await drawSmart(ctx, leftImg, 0, 0, halfW, outH, mode, bgColor);
+    // Draw Right
+    await drawSmart(ctx, rightImg, halfW, 0, outW - halfW, outH, mode, bgColor);
+
+    return { canvas, ctx, outW, outH };
 }
 
 export function exportAs(canvas, format = 'png', quality = 0.92) {
