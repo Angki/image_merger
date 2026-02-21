@@ -12,49 +12,64 @@ import { Logger } from '../core/logger.js';
 
 const log = new Logger('App');
 
-/** Check if running inside Electron */
+// ─── Constants & Runtime ─────────────────────────────────────────────
 const isElectron = !!(window.electronAPI && window.electronAPI.isElectron);
 log.info(`Runtime: ${isElectron ? 'Electron' : 'Browser'}`);
 
-// ─── State ───────────────────────────────────────────────────────────
-const state = {
-    layout: '2', // '2', '3', '4'
-    images: [null, null], // Array of { file, img, info } | null
-    mergedCanvas: null,
-    batchPairs: [],
-    batchProcessing: false,
-    lastFocusedIndex: 0,
-};
-
-// ─── DOM Refs ────────────────────────────────────────────────────────
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+// ─── State ───────────────────────────────────────────────────────────
+const state = {
+    layout: '2',          // Current layout ID: '2', '3', '4'
+    images: [null, null], // Array of { file, img, info } | null
+    mergedCanvas: null,   // The final merged result as canvas
+    batchPairs: [],       // For batch mode (future)
+    batchProcessing: false,
+    lastFocusedIndex: 0,  // Index of last interacted slot (for paste)
+};
+
+// ─── DOM Elements ────────────────────────────────────────────────────
 const DOM = {
+    // Top Bar / Layout
     layoutBtns: $$('.layout-btn'),
+
+    // Grid
     dropGrid: $('#drop-grid'),
+
+    // Controls Panel
     resizeMode: $('#resize-mode'),
     outWidth: $('#out-width'),
     outHeight: $('#out-height'),
     bgColor: $('#bg-color'),
     jpgQuality: $('#jpg-quality'),
+
+    // Preview Section
     previewCanvas: $('#preview-canvas'),
     previewPlaceholder: $('#preview-placeholder'),
     previewInfo: $('#preview-info'),
     previewWrapper: $('#preview-wrapper'),
+
+    // Action Buttons
     btnSavePng: $('#btn-save-png'),
     btnSaveJpg: $('#btn-save-jpg'),
     btnCopy: $('#btn-copy'),
+    btnReset: $('#btn-reset-all'),
+
+    // UI Feedback
     toastContainer: $('#toast-container'),
-    // Batch (kept simple for now, focuses on layout 2)
-    batchDrop: $('#batch-drop'),
-    batchFileInput: $('#batch-file-input'),
-    batchPairsList: $('#batch-pairs-list'),
-    batchEmpty: $('#batch-empty'),
-    btnBatchMerge: $('#btn-batch-merge'),
-    btnBatchClear: $('#btn-batch-clear'),
-    batchProgress: $('#batch-progress'),
-    batchProgressBar: $('#batch-progress-bar'),
+
+    // Batch Mode Elements
+    batch: {
+        drop: $('#batch-drop'),
+        input: $('#batch-file-input'),
+        list: $('#batch-pairs-list'),
+        empty: $('#batch-empty'),
+        mergeBtn: $('#btn-batch-merge'),
+        clearBtn: $('#btn-batch-clear'),
+        progress: $('#batch-progress'),
+        progressBar: $('#batch-progress-bar'),
+    },
 };
 
 // ─── Toast ───────────────────────────────────────────────────────────
