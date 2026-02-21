@@ -118,6 +118,41 @@ async function drawSmart(ctx, img, x, y, w, h, mode, bgColor) {
     }
 }
 
+async function drawLayout3(images, { mode, bgColor }) {
+    const outW = 3000;
+    const outH = 3000;
+    const { canvas, ctx } = createCanvas(outW, outH);
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, outW, outH);
+
+    // Slot 1: Top Left (0,0) -> 1500x1500
+    if (images[0]) await drawSmart(ctx, images[0], 0, 0, 1500, 1500, mode, bgColor);
+    // Slot 2: Top Right (1500,0) -> 1500x1500
+    if (images[1]) await drawSmart(ctx, images[1], 1500, 0, 1500, 1500, mode, bgColor);
+    // Slot 3: Bottom (0,1500) -> 3000x1500
+    if (images[2]) await drawSmart(ctx, images[2], 0, 1500, 3000, 1500, mode, bgColor);
+
+    return { canvas, ctx, outW, outH };
+}
+
+async function drawLayout4(images, { mode, bgColor }) {
+    const outW = 3000;
+    const outH = 3000;
+    const { canvas, ctx } = createCanvas(outW, outH);
+
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, outW, outH);
+
+    // Grid 1500x1500 each
+    if (images[0]) await drawSmart(ctx, images[0], 0, 0, 1500, 1500, mode, bgColor);
+    if (images[1]) await drawSmart(ctx, images[1], 1500, 0, 1500, 1500, mode, bgColor);
+    if (images[2]) await drawSmart(ctx, images[2], 0, 1500, 1500, 1500, mode, bgColor);
+    if (images[3]) await drawSmart(ctx, images[3], 1500, 1500, 1500, 1500, mode, bgColor);
+
+    return { canvas, ctx, outW, outH };
+}
+
 /**
  * Main Merge Function
  * @param {HTMLImageElement[]} images - Array of loaded images
@@ -137,41 +172,12 @@ export async function mergeImages(images, options = {}) {
     let canvas, ctx, outW, outH;
 
     // --- Layout 3: Mixed (2 Top, 1 Bottom) ---
-    // Fixed 3000x3000px
     if (layout === '3') {
-        outW = 3000;
-        outH = 3000;
-        ({ canvas, ctx } = createCanvas(outW, outH));
-
-        // Fill bg
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, outW, outH);
-
-        // Slot 1: Top Left (0,0) -> 1500x1500
-        if (images[0]) await drawSmart(ctx, images[0], 0, 0, 1500, 1500, mode, bgColor);
-
-        // Slot 2: Top Right (1500,0) -> 1500x1500
-        if (images[1]) await drawSmart(ctx, images[1], 1500, 0, 1500, 1500, mode, bgColor);
-
-        // Slot 3: Bottom (0,1500) -> 3000x1500
-        if (images[2]) await drawSmart(ctx, images[2], 0, 1500, 3000, 1500, mode, bgColor);
-
+        ({ canvas, ctx, outW, outH } = await drawLayout3(images, { mode, bgColor }));
     }
     // --- Layout 4: Grid (2x2) ---
-    // Fixed 3000x3000px
     else if (layout === '4') {
-        outW = 3000;
-        outH = 3000;
-        ({ canvas, ctx } = createCanvas(outW, outH));
-
-        ctx.fillStyle = bgColor;
-        ctx.fillRect(0, 0, outW, outH);
-
-        // Grid 1500x1500 each
-        if (images[0]) await drawSmart(ctx, images[0], 0, 0, 1500, 1500, mode, bgColor);
-        if (images[1]) await drawSmart(ctx, images[1], 1500, 0, 1500, 1500, mode, bgColor);
-        if (images[2]) await drawSmart(ctx, images[2], 0, 1500, 1500, 1500, mode, bgColor);
-        if (images[3]) await drawSmart(ctx, images[3], 1500, 1500, 1500, 1500, mode, bgColor);
+        ({ canvas, ctx, outW, outH } = await drawLayout4(images, { mode, bgColor }));
     }
     // --- Layout 2: Split (Original) ---
     else {
