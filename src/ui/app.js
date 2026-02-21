@@ -84,18 +84,24 @@ function showToast(message, type = 'success', duration = 3000) {
     }, duration);
 }
 
-// ─── Layout Switching ────────────────────────────────────────────────
-function setLayout(layout) {
-    if (state.layout === layout) return;
-    state.layout = layout;
+// ─── Layout Logic ────────────────────────────────────────────────────
+function setLayout(layoutId) {
+    if (state.layout === layoutId) return;
 
-    // Update active button
-    DOM.layoutBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.layout === layout);
-    });
+    updateLayoutState(layoutId);
+    syncLayoutUI(layoutId);
 
-    // Resize state.images array
-    const targetSize = parseInt(layout);
+    renderDropZones();
+    updatePreview();
+
+    log.info(`Layout switched to: ${layoutId}`);
+}
+
+function updateLayoutState(layoutId) {
+    state.layout = layoutId;
+
+    // Resize state.images array based on layout capacity
+    const targetSize = parseInt(layoutId);
     if (state.images.length > targetSize) {
         state.images.length = targetSize; // Truncate
     } else {
@@ -103,14 +109,19 @@ function setLayout(layout) {
             state.images.push(null); // Expand
         }
     }
+}
 
-    renderDropZones();
-    updatePreview();
+function syncLayoutUI(layoutId) {
+    // Update active button state
+    DOM.layoutBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.layout === layoutId);
+    });
 
-    // Auto-disable output size controls for fixed-dimension layouts
-    const isFixed = (layout === '3' || layout === '4');
+    // Handle fixed-dimension layouts (3 & 4)
+    const isFixed = (layoutId === '3' || layoutId === '4');
     DOM.outWidth.disabled = isFixed;
     DOM.outHeight.disabled = isFixed;
+
     if (isFixed) {
         DOM.outWidth.value = '';
         DOM.outHeight.value = '';
@@ -120,8 +131,6 @@ function setLayout(layout) {
         DOM.outWidth.placeholder = 'auto';
         DOM.outHeight.placeholder = 'auto';
     }
-
-    log.info(`Layout switched to: ${layout}`);
 }
 
 DOM.layoutBtns.forEach(btn => {
