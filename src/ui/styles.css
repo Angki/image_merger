@@ -207,6 +207,7 @@ h3 {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin-bottom: 24px;
+  transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .drop-zone {
@@ -245,9 +246,18 @@ h3 {
 }
 
 .drop-zone .drop-icon {
-  font-size: 2rem;
+  width: 48px;
+  height: 48px;
   margin-bottom: 12px;
-  opacity: 0.4;
+  opacity: 0.3;
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.drop-zone:hover .drop-icon {
+  opacity: 0.6;
+  color: var(--accent);
+  transform: scale(1.1);
 }
 
 .drop-zone .label {
