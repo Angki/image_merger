@@ -27,6 +27,7 @@ const state = {
     batchPairs: [],       // For batch mode (future)
     batchProcessing: false,
     lastFocusedIndex: 0,  // Index of last interacted slot (for paste)
+    isProcessing: false,  // Image processing guard for spinner
 };
 
 // ─── DOM Elements ────────────────────────────────────────────────────
@@ -287,25 +288,34 @@ async function handleImageSet(index, file) {
 
 // ─── Preview ─────────────────────────────────────────────────────────
 async function updatePreview() {
-    // Check if we have enough images to at least try merging
-    // Layout 2 needs 2 images? Or just 1? Allow partial preview?
-    // Let's require all slots filled for 3/4, or at least 2 for layout 2.
-    // Making it robust: Any valid image contributes.
+    if (state.isProcessing) return;
 
     const validImages = state.images.map(s => s ? s.img : null);
     const hasAny = validImages.some(img => img !== null);
 
     if (!hasAny) {
         DOM.previewCanvas.style.display = 'none';
-        DOM.previewPlaceholder.style.display = 'block';
+        DOM.previewPlaceholder.style.display = 'flex';
         DOM.previewInfo.style.display = 'none';
-        DOM.previewPlaceholder.textContent = 'Add images to see preview';
+        DOM.previewPlaceholder.innerHTML = 'Add images to see preview';
         setActionButtons(false);
         state.mergedCanvas = null;
         return;
     }
 
     try {
+        state.isProcessing = true;
+
+        // Show Loading Spinner
+        DOM.previewPlaceholder.innerHTML = `
+            <div class="loading-spinner"></div>
+            <p style="margin-top:12px; font-size:0.9rem; color:var(--text-secondary);">Processing high-quality merge...</p>
+        `;
+        DOM.previewPlaceholder.style.display = 'flex';
+        DOM.previewPlaceholder.style.flexDirection = 'column';
+        DOM.previewCanvas.style.display = 'none';
+        DOM.previewInfo.style.display = 'none';
+
         const options = {
             layout: state.layout,
             width: parseInt(DOM.outWidth.value) || 0,
@@ -332,10 +342,13 @@ async function updatePreview() {
         setActionButtons(true);
     } catch (err) {
         log.error('Preview failed:', err);
-        // Only show toast if it's a real error, not just "not enough images"
         if (!err.message.includes('requires at least')) {
             showToast('Preview error: ' + err.message, 'error');
         }
+        DOM.previewPlaceholder.innerHTML = 'Add images to see preview';
+        DOM.previewPlaceholder.style.display = 'flex';
+    } finally {
+        state.isProcessing = false;
     }
 }
 
