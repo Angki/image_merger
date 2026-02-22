@@ -180,9 +180,13 @@ function renderDropZones() {
                 e.dataTransfer.setData('text/plain', index);
                 e.dataTransfer.effectAllowed = 'move';
                 zone.classList.add('is-dragging');
+                document.body.classList.add('is-dragging-active');
                 log.debug(`Drag start: slot ${index}`);
             };
-            zone.ondragend = () => zone.classList.remove('is-dragging');
+            zone.ondragend = () => {
+                zone.classList.remove('is-dragging');
+                document.body.classList.remove('is-dragging-active');
+            };
 
         } else {
             // Empty
