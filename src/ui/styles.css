@@ -6,9 +6,13 @@
 /* --- CSS Custom Properties --- */
 :root {
   --bg-primary: #0d0d0d;
-  --bg-secondary: #1a1a1a;
-  --bg-tertiary: #252525;
-  --bg-hover: #2f2f2f;
+  --bg-secondary: rgba(26, 26, 26, 0.85);
+  /* For glassmorphism */
+  --bg-tertiary: rgba(37, 37, 37, 0.6);
+  /* For glassmorphism */
+  --bg-hover: rgba(47, 47, 47, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 16px;
   --border: #333;
   --border-active: #555;
   --text-primary: #e8e8e8;
@@ -251,6 +255,7 @@ h3 {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .drop-zone .img-info {
@@ -329,10 +334,13 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 16px 20px;
+  padding: 20px 24px;
   background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   margin-bottom: 24px;
 }
 
@@ -428,14 +436,53 @@ h3 {
 
 .preview-wrapper {
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-lg);
-  padding: 16px;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
+  min-height: 240px;
   position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .preview-wrapper canvas {
