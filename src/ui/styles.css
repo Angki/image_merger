@@ -127,6 +127,11 @@ h3 {
 .tab-btn.active {
   background: var(--accent-dim);
   color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.tab-btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .tab-content {
@@ -188,6 +193,12 @@ h3 {
   background: var(--accent);
   color: var(--bg-primary);
   font-weight: 600;
+  box-shadow: 0 4px 12px var(--accent-dim);
+  transform: translateY(-1px);
+}
+
+.layout-btn:active {
+  transform: translateY(0) scale(0.95);
 }
 
 /* --- Drop Grid --- */
@@ -535,11 +546,19 @@ h3 {
 .btn:hover {
   background: var(--bg-tertiary);
   border-color: var(--border-active);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .btn-accent {
@@ -550,6 +569,7 @@ h3 {
 
 .btn-accent:hover {
   background: rgba(168, 85, 247, 0.25);
+  border-color: var(--accent);
 }
 
 /* --- Batch Mode --- */
