@@ -154,6 +154,7 @@ function renderDropZones() {
         if (slotData) {
             // Has Image
             zone.classList.add('has-image');
+            zone.draggable = true;
 
             const thumb = document.createElement('img');
             thumb.className = 'preview-thumb';
@@ -173,6 +174,16 @@ function renderDropZones() {
             };
 
             zone.append(thumb, info, clearBtn);
+
+            // Drag out (Source)
+            zone.ondragstart = (e) => {
+                e.dataTransfer.setData('text/plain', index);
+                e.dataTransfer.effectAllowed = 'move';
+                zone.classList.add('is-dragging');
+                log.debug(`Drag start: slot ${index}`);
+            };
+            zone.ondragend = () => zone.classList.remove('is-dragging');
+
         } else {
             // Empty
             zone.innerHTML = `
@@ -199,13 +210,31 @@ function renderDropZones() {
             };
         }
 
-        // Drag Events
-        zone.ondragover = (e) => { e.preventDefault(); zone.classList.add('drag-over'); };
+        // Drag Events (Global for zone)
+        zone.ondragover = (e) => {
+            e.preventDefault();
+            zone.classList.add('drag-over');
+            e.dataTransfer.dropEffect = 'move';
+        };
+
         zone.ondragleave = () => zone.classList.remove('drag-over');
+
         zone.ondrop = (e) => {
             e.preventDefault();
             zone.classList.remove('drag-over');
-            if (e.dataTransfer.files[0]) handleImageSet(index, e.dataTransfer.files[0]);
+
+            const sourceIdx = e.dataTransfer.getData('text/plain');
+
+            // If dropping a file from OS
+            if (e.dataTransfer.files.length > 0) {
+                handleImageSet(index, e.dataTransfer.files[0]);
+                return;
+            }
+
+            // If internal swap
+            if (sourceIdx !== '' && sourceIdx !== index.toString()) {
+                swapSlots(parseInt(sourceIdx), index);
+            }
         };
 
         // Track focus for paste
@@ -217,6 +246,15 @@ function renderDropZones() {
 
 function clearSlot(index) {
     state.images[index] = null;
+    renderDropZones();
+    updatePreview();
+}
+
+function swapSlots(idx1, idx2) {
+    log.info(`Swapping slots ${idx1} and ${idx2}`);
+    const temp = state.images[idx1];
+    state.images[idx1] = state.images[idx2];
+    state.images[idx2] = temp;
     renderDropZones();
     updatePreview();
 }
