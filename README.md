@@ -1,6 +1,7 @@
 # Art Split Merger
 
-> Desktop app for merging split album cover images into collage layouts.
+> Desktop app for merging split album cover images into collage layouts.  
+> **Repository**: [https://github.com/Angki/image_merger](https://github.com/Angki/image_merger)
 
 ![Electron](https://img.shields.io/badge/Electron-33-blue?logo=electron)
 ![License](https://img.shields.io/badge/License-MIT-green)

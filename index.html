@@ -48,12 +48,28 @@
           <button class="layout-btn" data-layout="4" title="4 Images (2x2 Grid)">
             <span class="icon">▦</span> Grid (4)
           </button>
+          <button class="layout-btn" data-layout="custom" title="Custom Grid (NxM)">
+            <span class="icon">⚙</span> Custom
+          </button>
         </div>
       </div>
 
       <!-- Dynamic Drop Grid -->
       <div class="drop-grid" id="drop-grid">
         <!-- Slots injected by JS -->
+      </div>
+
+      <div class="layout-templates-bar">
+          <label>Presets:</label>
+          <select id="layout-templates">
+              <option value="">-- Choose Template --</option>
+              <option value="2">Split (1x2)</option>
+              <option value="3">Mixed (2 Top, 1 Bottom)</option>
+              <option value="4">Quadrant (2x2)</option>
+              <option value="1x3">Triptych (1x3)</option>
+              <option value="3x1">Triptych Horiz (3x1)</option>
+              <option value="1x1">Single (1x1)</option>
+          </select>
       </div>
 
       <!-- Controls -->
@@ -79,6 +95,14 @@
         <div class="control-group">
           <label for="bg-color">Background</label>
           <input type="color" id="bg-color" value="#000000">
+        </div>
+
+        <div class="control-group">
+           <label for="spacing-gap">Gap (px)</label>
+           <div class="input-with-unit">
+               <input type="number" id="spacing-gap" min="0" max="100" value="0">
+               <span class="unit">px</span>
+           </div>
         </div>
 
         <div class="control-group">
@@ -123,9 +147,16 @@
         <h2>📦 Batch Merge</h2>
 
         <div class="batch-drop-zone" id="batch-drop">
-          Drop multiple images here — they will be paired in order (1st+2nd, 3rd+4th, etc.)
+          Drop multiple images here — they will be grouped based on current layout
           <br><small>Or click to browse files</small>
           <input type="file" class="hidden-input" id="batch-file-input" accept="image/png,image/jpeg,image/webp" multiple>
+        </div>
+
+        <div class="batch-options" style="margin: 10px 0; display: flex; align-items: center; gap: 8px;">
+          <input type="checkbox" id="batch-smart-grouping">
+          <label for="batch-smart-grouping" style="font-size: 0.9rem; color: var(--text-secondary); cursor: pointer;">
+            Smart Grouping (Auto-pair by filename)
+          </label>
         </div>
 
         <div class="batch-pairs-list" id="batch-pairs-list">
@@ -151,7 +182,38 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="src/lib/pica.min.js"></script>
-  <script type="module" src="src/ui/app.js"></script>
-</body>
+  <!-- Crop Modal -->
+  <div id="crop-modal" class="modal">
+      <div class="modal-content glass">
+          <div class="modal-header">
+              <h3>Crop Image</h3>
+              <p class="modal-subtitle">Drag to select the area you want to keep</p>
+          </div>
+          <div id="crop-workspace" class="crop-workspace">
+              <img id="crop-image-source" src="" alt="Source for cropping">
+              <div id="crop-selector" class="crop-selector">
+                  <div class="crop-handles">
+                      <div class="handle nw"></div>
+                      <div class="handle ne"></div>
+                      <div class="handle sw"></div>
+                      <div class="handle se"></div>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-actions">
+              <button id="btn-crop-cancel" class="btn secondary">Cancel</button>
+              <button id="btn-crop-save" class="btn primary">Apply Crop</button>
+          </div>
+      </div>
+  </div>
+
+   <div class="batch-results-summary" id="batch-results" style="display:none; margin-top: 20px;">
+     <h3>✅ Batch Results</h3>
+     <div class="results-grid" id="batch-results-grid"></div>
+   </div>
+
+   <script src="src/lib/pica.min.js"></script>
+   <script src="src/lib/jszip.min.js"></script>
+   <script type="module" src="src/ui/app.js"></script>
+ </body>
 </html>

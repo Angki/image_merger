@@ -131,8 +131,10 @@ describe('mergeImages', () => {
     it('merges two same-size images — auto dimensions', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_same_size.png');
         const result = await mergeImages({
-            leftPath: path.join(TEST_DIR, 'red_500x500.png'),
-            rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+            images: [
+                path.join(TEST_DIR, 'red_500x500.png'),
+                path.join(TEST_DIR, 'blue_500x500.png')
+            ],
             outPath,
             width: 0, height: 0, bg: '#000000', mode: 'fit',
         });
@@ -148,8 +150,10 @@ describe('mergeImages', () => {
     it('merges with custom dimensions', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_custom.png');
         const result = await mergeImages({
-            leftPath: path.join(TEST_DIR, 'red_500x500.png'),
-            rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+            images: [
+                path.join(TEST_DIR, 'red_500x500.png'),
+                path.join(TEST_DIR, 'blue_500x500.png')
+            ],
             outPath,
             width: 3000, height: 1500, bg: '#000000', mode: 'fit',
         });
@@ -164,8 +168,10 @@ describe('mergeImages', () => {
     it('merges images with different heights', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_diff_height.png');
         const result = await mergeImages({
-            leftPath: path.join(TEST_DIR, 'green_300x600.png'),
-            rightPath: path.join(TEST_DIR, 'yellow_800x400.png'),
+            images: [
+                path.join(TEST_DIR, 'green_300x600.png'),
+                path.join(TEST_DIR, 'yellow_800x400.png')
+            ],
             outPath,
             width: 0, height: 0, bg: '#000000', mode: 'fit',
         });
@@ -177,8 +183,10 @@ describe('mergeImages', () => {
     it('merges with stretch mode', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_stretch.png');
         const result = await mergeImages({
-            leftPath: path.join(TEST_DIR, 'red_500x500.png'),
-            rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+            images: [
+                path.join(TEST_DIR, 'red_500x500.png'),
+                path.join(TEST_DIR, 'blue_500x500.png')
+            ],
             outPath,
             width: 2000, height: 1000, bg: '#000000', mode: 'stretch',
         });
@@ -189,8 +197,10 @@ describe('mergeImages', () => {
     it('saves as JPEG with quality', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_output.jpg');
         await mergeImages({
-            leftPath: path.join(TEST_DIR, 'red_500x500.png'),
-            rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+            images: [
+                path.join(TEST_DIR, 'red_500x500.png'),
+                path.join(TEST_DIR, 'blue_500x500.png')
+            ],
             outPath,
             width: 0, height: 0, bg: '#000000', mode: 'fit', quality: 80,
         });
@@ -202,8 +212,10 @@ describe('mergeImages', () => {
     it('throws on missing file', async () => {
         await assert.rejects(
             () => mergeImages({
-                leftPath: path.join(TEST_DIR, 'nonexistent.png'),
-                rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+                images: [
+                    path.join(TEST_DIR, 'nonexistent.png'),
+                    path.join(TEST_DIR, 'blue_500x500.png')
+                ],
                 outPath: path.join(OUTPUT_DIR, 'fail.png'),
                 width: 0, height: 0, bg: '#000000', mode: 'fit',
             }),
@@ -217,8 +229,10 @@ describe('mergeImages', () => {
     it('merges with custom width only', async () => {
         const outPath = path.join(OUTPUT_DIR, 'merge_width_only.png');
         const result = await mergeImages({
-            leftPath: path.join(TEST_DIR, 'red_500x500.png'),
-            rightPath: path.join(TEST_DIR, 'blue_500x500.png'),
+            images: [
+                path.join(TEST_DIR, 'red_500x500.png'),
+                path.join(TEST_DIR, 'blue_500x500.png')
+            ],
             outPath,
             width: 2000, height: 0, bg: '#000000', mode: 'fit',
         });

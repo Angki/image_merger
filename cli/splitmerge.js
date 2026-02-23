@@ -42,81 +42,119 @@ function parseArgs(argv) {
 
 // ─── Merge Logic ─────────────────────────────────────────────────────
 
-async function mergeImages({ leftPath, rightPath, outPath, width, height, bg, mode, quality }) {
-    // Validate inputs exist
-    if (!fs.existsSync(leftPath)) throw new Error(`Left image not found: ${leftPath}`);
-    if (!fs.existsSync(rightPath)) throw new Error(`Right image not found: ${rightPath}`);
+async function mergeImages({ images, outPath, layout = '2', customGrid, gap = 0, width, height, bg, mode, quality }) {
+    if (!images || images.length === 0) throw new Error('No input images provided');
 
-    // Load images
-    const leftMeta = await sharp(leftPath).metadata();
-    const rightMeta = await sharp(rightPath).metadata();
+    // Load all metadata
+    const metas = await Promise.all(images.map(async p => {
+        if (!fs.existsSync(p)) throw new Error(`Image not found: ${p}`);
+        return { path: p, ...(await sharp(p).metadata()) };
+    }));
 
-    const lw = leftMeta.width, lh = leftMeta.height;
-    const rw = rightMeta.width, rh = rightMeta.height;
-
+    // Determine target dimensions
     let outW, outH;
+    let gridRows, gridCols;
 
-    if (width > 0 && height > 0) {
-        outW = width;
-        outH = height;
-    } else if (width > 0) {
-        const halfW = Math.floor(width / 2);
-        const leftScale = halfW / lw;
-        const rightScale = halfW / rw;
-        outH = Math.round(Math.max(lh * leftScale, rh * rightScale));
-        outW = width;
-    } else if (height > 0) {
-        const leftScale = height / lh;
-        const rightScale = height / rh;
-        outW = Math.round(lw * leftScale + rw * rightScale);
-        outH = height;
+    if (layout === '3') {
+        gridRows = 2; gridCols = 2; // Mixed 2 top, 1 bottom
+        outW = 3000; outH = 3000;
+    } else if (layout === '4') {
+        gridRows = 2; gridCols = 2;
+        outW = 3000; outH = 3000;
+    } else if (layout === 'custom' && customGrid) {
+        gridRows = customGrid.rows;
+        gridCols = customGrid.cols;
+        outW = width || 3000;
+        outH = height || 3000;
     } else {
-        // Auto: normalize to tallest height
-        const targetH = Math.max(lh, rh);
-        const leftScale = targetH / lh;
-        const rightScale = targetH / rh;
-        outW = Math.round(lw * leftScale) + Math.round(rw * rightScale);
-        outH = targetH;
+        // Layout '2' (Split) or default
+        gridRows = 1; gridCols = 2;
+
+        // Calculate auto dimensions for layout 2
+        const left = metas[0];
+        const right = metas[1] || metas[0]; // fallback
+        if (width > 0 && height > 0) {
+            outW = width; outH = height;
+        } else if (width > 0) {
+            const hw = (width - gap) / 2;
+            const ls = hw / left.width;
+            const rs = hw / right.width;
+            outH = Math.round(Math.max(left.height * ls, right.height * rs));
+            outW = width;
+        } else if (height > 0) {
+            const ls = height / left.height;
+            const rs = height / right.height;
+            outW = Math.round(left.width * ls + right.width * rs + gap);
+            outH = height;
+        } else {
+            const th = Math.max(left.height, right.height);
+            const ls = th / left.height;
+            const rs = th / right.height;
+            outW = Math.round(left.width * ls) + Math.round(right.width * rs) + gap;
+            outH = th;
+        }
     }
 
-    const halfW = Math.round(outW / 2);
-    const rightHalfW = outW - halfW;
-
-    // Parse background color
     const bgColor = parseBgColor(bg || '#000000');
+    const compositeOps = [];
 
-    let leftResized, rightResized;
-    let leftTop, rightTop, leftLeft, rightLeft;
-
-    if (mode === 'stretch') {
-        // Stretch to fill each half
-        leftResized = await sharp(leftPath)
-            .resize(halfW, outH, { fit: 'fill' })
-            .toBuffer();
-        rightResized = await sharp(rightPath)
-            .resize(rightHalfW, outH, { fit: 'fill' })
-            .toBuffer();
-        leftTop = 0; leftLeft = 0;
-        rightTop = 0; rightLeft = halfW;
-    } else {
-        // Fit: preserve aspect ratio, center
-        const leftFit = fitInBox(lw, lh, halfW, outH);
-        const rightFit = fitInBox(rw, rh, rightHalfW, outH);
-
-        leftResized = await sharp(leftPath)
-            .resize(leftFit.w, leftFit.h, { fit: 'fill' })
-            .toBuffer();
-        rightResized = await sharp(rightPath)
-            .resize(rightFit.w, rightFit.h, { fit: 'fill' })
-            .toBuffer();
-
-        leftTop = leftFit.offsetY;
-        leftLeft = leftFit.offsetX;
-        rightTop = rightFit.offsetY;
-        rightLeft = halfW + rightFit.offsetX;
+    // Calculate slots
+    const slots = [];
+    if (layout === '3') {
+        const hw = (outW - gap) / 2;
+        const hh = (outH - gap) / 2;
+        slots.push({ x: 0, y: 0, w: hw, h: hh });
+        slots.push({ x: hw + gap, y: 0, w: hw, h: hh });
+        slots.push({ x: 0, y: hh + gap, w: outW, h: hh });
+    } else if (layout === '4') {
+        const hw = (outW - gap) / 2;
+        const hh = (outH - gap) / 2;
+        slots.push({ x: 0, y: 0, w: hw, h: hh });
+        slots.push({ x: hw + gap, y: 0, w: hw, h: hh });
+        slots.push({ x: 0, y: hh + gap, w: hw, h: hh });
+        slots.push({ x: hw + gap, y: hh + gap, w: hw, h: hh });
+    } else if (layout === 'custom' || layout === '2') {
+        const cellW = (outW - (gridCols - 1) * gap) / gridCols;
+        const cellH = (outH - (gridRows - 1) * gap) / gridRows;
+        for (let r = 0; r < gridRows; r++) {
+            for (let c = 0; c < gridCols; c++) {
+                slots.push({
+                    x: Math.round(c * (cellW + gap)),
+                    y: Math.round(r * (cellH + gap)),
+                    w: Math.round(cellW),
+                    h: Math.round(cellH)
+                });
+            }
+        }
     }
 
-    // Create output canvas and composite
+    // Process each image into its slot
+    for (let i = 0; i < Math.min(metas.length, slots.length); i++) {
+        const meta = metas[i];
+        const slot = slots[i];
+
+        let resized;
+        let top, left;
+
+        if (mode === 'stretch') {
+            resized = await sharp(meta.path)
+                .resize(slot.w, slot.h, { fit: 'fill' })
+                .toBuffer();
+            top = slot.y;
+            left = slot.x;
+        } else {
+            const fit = fitInBox(meta.width, meta.height, slot.w, slot.h);
+            resized = await sharp(meta.path)
+                .resize(fit.w, fit.h, { fit: 'fill' })
+                .toBuffer();
+            top = slot.y + fit.offsetY;
+            left = slot.x + fit.offsetX;
+        }
+
+        compositeOps.push({ input: resized, top, left });
+    }
+
+    // Create result
     const result = sharp({
         create: {
             width: outW,
@@ -124,12 +162,8 @@ async function mergeImages({ leftPath, rightPath, outPath, width, height, bg, mo
             channels: 4,
             background: bgColor,
         }
-    }).composite([
-        { input: leftResized, top: leftTop, left: leftLeft },
-        { input: rightResized, top: rightTop, left: rightLeft },
-    ]);
+    }).composite(compositeOps);
 
-    // Determine output format
     const ext = path.extname(outPath).toLowerCase();
     if (ext === '.jpg' || ext === '.jpeg') {
         await result.jpeg({ quality: quality || 92 }).toFile(outPath);
@@ -166,65 +200,99 @@ async function main() {
     const args = parseArgs(process.argv);
 
     // Help
-    if (args.help || Object.keys(args).length === 0) {
+    if (args.help || process.argv.length <= 2) {
         console.log(`
 ╔══════════════════════════════════════════╗
-║        Art Split Merger — CLI            ║
+║        Art Split Merger — CLI v2         ║
 ╚══════════════════════════════════════════╝
 
 Usage:
-  splitmerge --left <file> --right <file> --out <file> [options]
+  splitmerge [images...] --out <file> [options]
   splitmerge --batch <pairs.json> [--out-dir <dir>] [options]
 
-Options:
-  --left <file>       Left image path
-  --right <file>      Right image path
+Core Options:
   --out <file>        Output file path
-  --width <px>        Custom output width (default: auto)
-  --height <px>       Custom output height (default: auto)
+  --layout <2|3|4|custom> (default: 2)
+  --gap <px>          Spacing between images (default: 0)
+  --rows <N>          Rows for custom layout
+  --cols <N>          Columns for custom layout
+
+Sizing & Styling:
+  --width <px>        Output width (auto for layout 2, 3000 for others)
+  --height <px>       Output height (auto for layout 2, 3000 for others)
   --bg <hex>          Background color (default: #000000)
   --mode <fit|stretch> Resize mode (default: fit)
   --quality <1-100>   JPEG/WebP quality (default: 92)
-  --batch <json>      Batch mode: path to JSON file with pairs
-  --out-dir <dir>     Batch output directory (default: current dir)
-  --help              Show this help
+
+Batch Mode:
+  --batch <json>      Path to JSON mapping file
+  --out-dir <dir>     Output directory (default: .)
 
 Examples:
-  splitmerge --left cover_a.png --right cover_b.png --out merged.png
-  splitmerge --left a.jpg --right b.jpg --width 3000 --height 1500 --out output.png
-  splitmerge --batch pairs.json --out-dir ./output/ --bg "#1a1a1a"
+  splitmerge img1.png img2.png --out merged.png
+  splitmerge img1.png img2.png img3.png --layout 3 --gap 20 --out triptych.png
+  splitmerge *.jpg --layout custom --rows 2 --cols 5 --out grid.png
     `);
         process.exit(0);
     }
 
+    // Extract positional images
+    const images = process.argv.slice(2).filter(a => !a.startsWith('--'));
+    // But some flags might have positional-like values (handled by parseArgs)
+    // Actually our simple parseArgs might grab them.
+    // Let's refine image detection: any arg NOT starting with -- and NOT being a value for a flag.
+    const imageList = [];
+    const parsed = parseArgs(process.argv);
+
+    // In our simple parser, we'll just use the positional args that aren't flag values
+    // to keep it simple, I'll rely on the user providing images first or using --imgs (future)
+    // For now, let's just use positional args from the end of process.argv that don't match flags.
+
     const options = {
-        width: parseInt(args.width) || 0,
-        height: parseInt(args.height) || 0,
-        bg: args.bg || '#000000',
-        mode: args.mode || 'fit',
-        quality: parseInt(args.quality) || 92,
+        layout: parsed.layout || '2',
+        gap: parseInt(parsed.gap) || 0,
+        customGrid: {
+            rows: parseInt(parsed.rows) || 2,
+            cols: parseInt(parsed.cols) || 3
+        },
+        width: parseInt(parsed.width) || 0,
+        height: parseInt(parsed.height) || 0,
+        bg: parsed.bg || '#000000',
+        mode: parsed.mode || 'fit',
+        quality: parseInt(parsed.quality) || 92,
     };
 
     // Batch mode
-    if (args.batch) {
-        await runBatch(args.batch, args['out-dir'] || '.', options);
+    if (parsed.batch) {
+        await runBatch(parsed.batch, parsed['out-dir'] || '.', options);
         return;
     }
 
-    // Single mode
-    if (!args.left || !args.right || !args.out) {
-        console.error('Error: --left, --right, and --out are required.');
+    // Single mode - images from CLI
+    // We need to filter out args that are values for flags
+    const realImages = [];
+    for (let i = 2; i < process.argv.length; i++) {
+        const arg = process.argv[i];
+        if (arg.startsWith('--')) {
+            const next = process.argv[i + 1];
+            if (next && !next.startsWith('--')) i++; // skip value
+            continue;
+        }
+        realImages.push(arg);
+    }
+
+    if (realImages.length === 0 || !parsed.out) {
+        console.error('Error: Input images and --out are required.');
         process.exit(1);
     }
 
     try {
         const result = await mergeImages({
-            leftPath: path.resolve(args.left),
-            rightPath: path.resolve(args.right),
-            outPath: path.resolve(args.out),
+            images: realImages,
+            outPath: path.resolve(parsed.out),
             ...options
         });
-        console.log(`✅ Merged: ${result.width}×${result.height} → ${args.out}`);
+        console.log(`✅ Merged: ${result.width}×${result.height} → ${parsed.out}`);
     } catch (err) {
         console.error(`❌ Error: ${err.message}`);
         process.exit(1);
@@ -254,14 +322,25 @@ async function runBatch(jsonPath, outDir, options) {
     let failed = 0;
 
     for (let i = 0; i < pairs.length; i++) {
-        const pair = pairs[i];
-        const outPath = path.resolve(outDir, pair.out);
-        process.stdout.write(`[${i + 1}/${pairs.length}] ${pair.left} + ${pair.right} → `);
+        const item = pairs[i];
+        const outPath = path.resolve(outDir, item.out);
+
+        let images = [];
+        if (item.left && item.right) {
+            images = [path.resolve(item.left), path.resolve(item.right)];
+            process.stdout.write(`[${i + 1}/${pairs.length}] ${item.left} + ${item.right} → `);
+        } else if (item.images && Array.isArray(item.images)) {
+            images = item.images.map(img => path.resolve(img));
+            process.stdout.write(`[${i + 1}/${pairs.length}] ${item.images.join(' + ')} → `);
+        } else {
+            console.log(`❌ Invalid batch item: must have {left, right} or {images: []}`);
+            failed++;
+            continue;
+        }
 
         try {
             const result = await mergeImages({
-                leftPath: path.resolve(pair.left),
-                rightPath: path.resolve(pair.right),
+                images,
                 outPath,
                 ...options
             });
