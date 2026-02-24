@@ -45,7 +45,7 @@ const state = {
 // ─── DOM Elements ────────────────────────────────────────────────────
 const DOM = {
     // Top Bar / Layout
-    layoutBtns: $$('.layout-btn'),
+    layoutBtns: $$('.layout-selector .layout-btn'),
 
     // Grid
     dropGrid: $('#drop-grid'),
@@ -682,7 +682,7 @@ async function handleSavePng() {
     try {
         if (isElectron) {
             const buffer = await canvasToArrayBuffer(state.mergedCanvas, 'png');
-            const res = await window.electronAPI.saveFile(buffer, 'merged.png', 'png');
+            const res = await window.electronAPI.saveFile(new Uint8Array(buffer), 'merged.png', 'png');
             if (res.success) showToast(`Saved: ${res.filePath}`);
         } else {
             const blob = await exportAs(state.mergedCanvas, 'png');
@@ -699,7 +699,7 @@ async function handleSaveJpg() {
     try {
         if (isElectron) {
             const buffer = await canvasToArrayBuffer(state.mergedCanvas, 'jpeg', getQuality());
-            const res = await window.electronAPI.saveFile(buffer, 'merged.jpg', 'jpg');
+            const res = await window.electronAPI.saveFile(new Uint8Array(buffer), 'merged.jpg', 'jpg');
             if (res.success) showToast(`Saved: ${res.filePath}`);
         } else {
             const blob = await exportAs(state.mergedCanvas, 'jpeg', getQuality());
@@ -716,7 +716,7 @@ async function handleCopyToClipboard() {
     try {
         if (isElectron) {
             const buffer = await canvasToArrayBuffer(state.mergedCanvas, 'png');
-            const res = await window.electronAPI.copyToClipboard(buffer);
+            const res = await window.electronAPI.copyToClipboard(new Uint8Array(buffer));
             if (res.success) showToast('Copied to clipboard');
         } else {
             const blob = await exportAs(state.mergedCanvas, 'png');
