@@ -61,15 +61,14 @@
 
       <div class="layout-templates-bar">
           <label>Presets:</label>
-          <select id="layout-templates">
-              <option value="">-- Choose Template --</option>
-              <option value="2">Split (1x2)</option>
-              <option value="3">Mixed (2 Top, 1 Bottom)</option>
-              <option value="4">Quadrant (2x2)</option>
-              <option value="1x3">Triptych (1x3)</option>
-              <option value="3x1">Triptych Horiz (3x1)</option>
-              <option value="1x1">Single (1x1)</option>
-          </select>
+          <div class="layout-options" id="layout-templates-group">
+            <button class="layout-btn active" data-preset="2">Split (1x2)</button>
+            <button class="layout-btn" data-preset="3">Mixed (3)</button>
+            <button class="layout-btn" data-preset="4">Grid (2x2)</button>
+            <button class="layout-btn" data-preset="1x3">Triptych (1x3)</button>
+            <button class="layout-btn" data-preset="3x1">Tri Horiz</button>
+            <button class="layout-btn" data-preset="1x1">Single</button>
+          </div>
       </div>
 
       <!-- Controls -->
@@ -85,9 +84,9 @@
         <div class="control-group">
           <label>Output Size (optional)</label>
           <div class="dim-group">
-            <input type="number" id="out-width" placeholder="auto" min="1" max="20000">
+            <input type="number" id="out-width" value="3000" placeholder="auto" min="1" max="20000">
             <span class="dim-separator">×</span>
-            <input type="number" id="out-height" placeholder="auto" min="1" max="20000">
+            <input type="number" id="out-height" value="1500" placeholder="auto" min="1" max="20000">
             <span class="dim-separator">px</span>
           </div>
         </div>
@@ -107,7 +106,7 @@
 
         <div class="control-group">
           <label for="jpg-quality">JPG Quality</label>
-          <input type="number" id="jpg-quality" value="92" min="1" max="100">
+          <input type="number" id="jpg-quality" value="100" min="1" max="100">
         </div>
       </div>
 

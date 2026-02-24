@@ -83,7 +83,7 @@ const DOM = {
         progress: $('#batch-progress'),
         progressBar: $('#batch-progress-bar'),
         gapInput: $('#spacing-gap'),
-        templateSelect: $('#layout-templates'),
+        presetBtns: $$('#layout-templates-group .layout-btn[data-preset]'),
         smartGrouping: $('#batch-smart-grouping'),
         results: $('#batch-results'),
         resultsGrid: $('#batch-results-grid'),
@@ -580,7 +580,7 @@ function setActionButtons(enabled) {
 }
 
 function getQuality() {
-    return Math.max(1, Math.min(100, parseInt(DOM.jpgQuality.value) || 92)) / 100;
+    return Math.max(1, Math.min(100, parseInt(DOM.jpgQuality.value) || 100)) / 100;
 }
 
 // ─── Clipboard Paste ─────────────────────────────────────────────────
@@ -613,18 +613,29 @@ DOM.gapInput.addEventListener('input', async () => {
     await updatePreview();
 });
 
-DOM.templateSelect.addEventListener('change', () => {
-    const val = DOM.templateSelect.value;
-    if (!val) return;
+DOM.presetBtns?.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        DOM.presetBtns.forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
 
-    if (val === '2' || val === '3' || val === '4') {
-        setLayout(val);
-    } else if (val.includes('x')) {
-        const [rows, cols] = val.split('x').map(n => parseInt(n));
-        state.customGrid.rows = rows;
-        state.customGrid.cols = cols;
-        setLayout('custom');
-    }
+        const val = e.currentTarget.dataset.preset;
+        if (!val) return;
+
+        if (val === '2' || val === '3' || val === '4') {
+            setLayout(val);
+        } else if (val.includes('x')) {
+            const [rows, cols] = val.split('x').map(n => parseInt(n));
+            state.customGrid.rows = rows;
+            state.customGrid.cols = cols;
+            setLayout('custom');
+        }
+
+        if (val === '2') {
+            DOM.outWidth.value = '3000';
+            DOM.outHeight.value = '1500';
+            updatePreview();
+        }
+    });
 });
 
 // ─── Keyboard Shortcuts ──────────────────────────────────────────────
