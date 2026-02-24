@@ -1,0 +1,30 @@
+﻿
+> art-split-merger@1.0.0 build
+> electron-builder --win portable
+
+  ΓÇó electron-builder  version=25.1.8 os=10.0.26200
+  ΓÇó loaded configuration  file=package.json ("build" field)
+  ΓÇó executing @electron/rebuild  electronVersion=33.4.11 arch=x64 buildFromSource=false appDir=./
+  ΓÇó installing native dependencies  arch=x64
+  ΓÇó completed installing native dependencies
+  ΓÇó packaging       platform=win32 arch=x64 electron=33.4.11 appOutDir=dist\win-unpacked
+  Γ¿» remove D:\Tools\image_merger\dist\win-unpacked\Art Split Merger.exe: Access is denied.
+github.com/develar/go-fs-util.EnsureEmptyDir
+	/Users/runner/go/pkg/mod/github.com/develar/go-fs-util@v0.0.0-20190620175131-69a2d4542206/fs.go:98
+github.com/develar/app-builder/pkg/electron.UnpackElectron.func1.1
+	/Users/runner/work/app-builder/app-builder/pkg/electron/electronUnpack.go:38
+github.com/develar/app-builder/pkg/util.MapAsyncConcurrency.func2
+	/Users/runner/work/app-builder/app-builder/pkg/util/async.go:68
+runtime.goexit
+	/Users/runner/hostedtoolcache/go/1.21.13/arm64/src/runtime/asm_amd64.s:1650  
+  Γ¿» D:\Tools\image_merger\node_modules\app-builder-bin\win\x64\app-builder.exe process failed ERR_ELECTRON_BUILDER_CANNOT_EXECUTE
+Exit code:
+1  failedTask=build stackTrace=Error: D:\Tools\image_merger\node_modules\app-builder-bin\win\x64\app-builder.exe process failed ERR_ELECTRON_BUILDER_CANNOT_EXECUTE
+Exit code:
+1
+    at ChildProcess.<anonymous> (D:\Tools\image_merger\node_modules\builder-util\src\util.ts:255:14)
+    at Object.onceWrapper (node:events:623:26)
+    at ChildProcess.emit (node:events:508:28)
+    at ChildProcess.cp.emit (D:\Tools\image_merger\node_modules\cross-spawn\lib\enoent.js:34:29)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:305:5)

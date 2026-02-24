@@ -24,11 +24,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
     /**
      * Copy image to system clipboard as native image.
-     * @param {string} dataURL - Image as data URL
+     * @param {ArrayBuffer} buffer - Image data
      * @returns {Promise<{success: boolean, error?: string}>}
      */
-    copyToClipboard: (dataURL) => {
-        return ipcRenderer.invoke('copy-to-clipboard', { dataURL });
+    copyToClipboard: (buffer) => {
+        return ipcRenderer.invoke('copy-to-clipboard', { buffer });
     },
 
     /**

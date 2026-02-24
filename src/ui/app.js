@@ -704,8 +704,8 @@ async function handleCopyToClipboard() {
     if (!state.mergedCanvas) return;
     try {
         if (isElectron) {
-            const dataURL = state.mergedCanvas.toDataURL('image/png');
-            const res = await window.electronAPI.copyToClipboard(dataURL);
+            const buffer = await canvasToArrayBuffer(state.mergedCanvas, 'png');
+            const res = await window.electronAPI.copyToClipboard(buffer);
             if (res.success) showToast('Copied to clipboard');
         } else {
             const blob = await exportAs(state.mergedCanvas, 'png');

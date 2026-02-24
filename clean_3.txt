@@ -1,0 +1,22 @@
+﻿
+> art-split-merger@1.0.0 build
+> electron-builder --win portable
+
+  ΓÇó electron-builder  version=25.1.8 os=10.0.26200
+  ΓÇó loaded configuration  file=package.json ("build" field)
+  ΓÇó executing @electron/rebuild  electronVersion=33.4.11 arch=x64 buildFromSource=false appDir=./
+  ΓÇó installing native dependencies  arch=x64
+  ΓÇó completed installing native dependencies
+  ΓÇó packaging       platform=win32 arch=x64 electron=33.4.11 appOutDir=dist\win-unpacked
+  ΓÇó updating asar integrity executable resource  executablePath=dist\win-unpacked\Art Split Merger.exe
+  ΓÇó signing with signtool.exe  path=dist\win-unpacked\Art Split Merger.exe
+  ΓÇó no signing info identified, signing is skipped  signHook=false cscInfo=null
+  ΓÇó building        target=portable file=dist\ArtSplitMerger-1.0.0-portable.exe archs=x64
+  ΓÇó downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z size=1.3 MB parts=1
+  ΓÇó downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-3.0.4.1/nsis-3.0.4.1.7z duration=2.538s
+  ΓÇó signing with signtool.exe  path=dist\win-unpacked\resources\elevate.exe
+  ΓÇó no signing info identified, signing is skipped  signHook=false cscInfo=null
+  ΓÇó downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z size=731 kB parts=1
+  ΓÇó downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/nsis-resources-3.4.1/nsis-resources-3.4.1.7z duration=1.101s
+  ΓÇó signing with signtool.exe  path=dist\ArtSplitMerger-1.0.0-portable.exe
+  ΓÇó no signing info identified, signing is skipped  signHook=false cscInfo=null

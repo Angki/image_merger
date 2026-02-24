@@ -106,12 +106,12 @@ ipcMain.handle('save-file', async (event, { buffer, defaultName, format }) => {
 
 /**
  * Copy image to native clipboard.
- * Receives: { dataURL: string }
+ * Receives: { buffer: ArrayBuffer }
  * Returns: { success: boolean, error?: string }
  */
-ipcMain.handle('copy-to-clipboard', async (event, { dataURL }) => {
+ipcMain.handle('copy-to-clipboard', async (event, { buffer }) => {
     try {
-        const img = nativeImage.createFromDataURL(dataURL);
+        const img = nativeImage.createFromBuffer(Buffer.from(buffer));
         clipboard.writeImage(img);
         return { success: true };
     } catch (err) {
